@@ -28,7 +28,7 @@ Führt eine Google-Suche aus und liefert bis zu 10 Ergebnisse.
   "parameters": {
     "key": "YOUR_API_KEY",
     "q": "Cyber-Mobbing App Jugendliche Deutschland",
-    "cx": "c6dc86504a592425a",
+    "cx": "c6…5a",
     "num": "5",
     "gl": "de",
     "lr": "lang_de",
