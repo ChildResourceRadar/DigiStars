@@ -1,6 +1,15 @@
 # DigiStars
 Ein intelligenter n8n-Workflow zur automatisierten Recherche, Kategorisierung und Verwaltung digitaler Tools für Kinder und Jugendliche in Deutschland.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![n8n](https://img.shields.io/badge/n8n-Workflow-ff6d5a)](https://n8n.io)
+
+## 📖 Dokumentation
+
+- **[Schnellstart](docs/QUICKSTART.md)** - In 15 Minuten loslegen
+- **[Setup-Anleitung](docs/SETUP.md)** - Vollständige Einrichtung
+- **[Workflow-Guide](docs/WORKFLOW-GUIDE.md)** - Detaillierte Funktionsweise
+
 ## 📋 Inhaltsverzeichnis
 
 - [Überblick](#überblick)
@@ -13,11 +22,6 @@ Ein intelligenter n8n-Workflow zur automatisierten Recherche, Kategorisierung un
 - [Workflow-Details](#workflow-details)
 - [Troubleshooting](#troubleshooting)
 - [Lizenz](#lizenz)
-
-## Weitere Dokumente
-- [Schnellstart](docs/QUICKSTART.md) 
-- [Setup](docs/SETUP.md) 
-- [Workflow-Guide](docs/WORKFLOW-GUIDE.md)
 
 ## 🎯 Überblick
 
@@ -136,40 +140,46 @@ docker run -d \
 
 ### 1. Repository klonen
 ```bash
-git clone https://github.com/dein-username/digistars-scrape-crawl.git
-cd digistars-scrape-crawl
+git clone https://github.com/ChildResourceRadar/DigiStars.git
+cd DigiStars
 ```
 
-### 2. n8n Workflow importieren
+### 2. Environment Variables einrichten
+```bash
+cp env.example .env
+# Bearbeite .env und füge deine API Keys ein
+```
+
+### 3. n8n Workflow importieren
 1. Öffne n8n im Browser
 2. Navigiere zu **Workflows** → **Import from File**
-3. Wähle `251016_Digistars_-_Scrape___Crawl.json`
+3. Wähle `workflows/digistars-n8n-scraper-categorizer.json`
 4. Bestätige den Import
 
-### 3. Credentials einrichten
+### 4. Credentials einrichten
 
 #### Google Custom Search
 ```
 Node: "Google Suche"
-- Parameter: query.key = DEIN_GOOGLE_API_KEY
-- Parameter: query.cx = DEINE_SEARCH_ENGINE_ID
+- Parameter: query.key = YOUR_GOOGLE_API_KEY
+- Parameter: query.cx = YOUR_SEARCH_ENGINE_ID
 ```
 
 #### EXA AI
 ```
 Node: "EXA Suche"
-- Header: x-api-key = DEIN_EXA_API_KEY
+- Header: x-api-key = YOUR_EXA_API_KEY
 ```
 
 #### OpenAI
 ```
-Credentials: "OpenAi account"
+Credentials: "OpenAI Account"
 - API Key eingeben
 ```
 
 #### Google Sheets
 ```
-Credentials: "Google Sheets | Captain AI"
+Credentials: "Google Sheets OAuth2"
 - OAuth2 Flow durchlaufen
 - Scopes: spreadsheets, drive.file
 ```
@@ -180,7 +190,7 @@ Node: "FireCrawl Scraper"
 - Credentials: API Key eingeben
 ```
 
-### 4. Google Sheet vorbereiten
+### 5. Google Sheet vorbereiten
 
 Erstelle ein Google Sheet mit folgenden Spalten:
 ```
@@ -193,10 +203,10 @@ Letztes Update | row_number
 Sheet-ID im Workflow aktualisieren:
 ```
 Nodes: "Neu erfasste abrufen", "Update", "Neu", etc.
-Document ID: DEINE_SHEET_ID
+Document ID: YOUR_SHEET_ID
 ```
 
-### 5. crawl4ai Docker Container starten
+### 6. crawl4ai Docker Container starten
 ```bash
 docker pull crawl4ai/server:latest
 docker run -d --name crawl4ai -p 11235:11235 crawl4ai/server:latest
@@ -285,9 +295,9 @@ num_results: 50  // Max 100
 {
   "url": "https://www.googleapis.com/customsearch/v1",
   "parameters": {
-    "key": "YOUR_API_KEY",
+    "key": "YOUR_GOOGLE_API_KEY",
     "q": "Cyber-Mobbing App Jugendliche Deutschland",
-    "cx": "c6dc86504a592425a",
+    "cx": "YOUR_SEARCH_ENGINE_ID",
     "num": "5",
     "gl": "de",
     "lr": "lang_de"
@@ -505,12 +515,14 @@ Verbesserungsvorschläge und Pull Requests sind willkommen!
 
 Dieses Projekt ist unter der MIT-Lizenz lizenziert - siehe [LICENSE](LICENSE) Datei für Details.
 
-## 👥 Autoren
+## 👥 Autoren & Danksagungen
 
-- **Manuel Dingemann** - *Initial work*
+**Entwickelt von:** Child Resource Radar e.V.  
+**Projektleitung:** Dr. Juliane Petersen  
+**Workflow-Entwicklung:** Manuel Dingemann  
+**Website:** [childresourceradar.org](https://childresourceradar.org)
 
-## 🙏 Danksagungen
-
+**Danke an:**
 - DigiStars Projekt-Team
 - n8n Community
 - crawl4ai Contributors
@@ -519,11 +531,18 @@ Dieses Projekt ist unter der MIT-Lizenz lizenziert - siehe [LICENSE](LICENSE) Da
 ## 📞 Support
 
 Bei Fragen oder Problemen:
-- GitHub Issues erstellen
-- E-Mail: manuel@captain-ai.de
+- **GitHub Issues:** [Issue erstellen](https://github.com/ChildResourceRadar/DigiStars/issues)
+- **Workflow-Fragen:** manuel@captain-ai.de
+- **Projekt-Kontakt:** info@childresourceradar.org
+- **Website:** [childresourceradar.org](https://childresourceradar.org)
 
 ---
 
-**Version:** 0.3
+**Version:** 0.3  
 **Letztes Update:** Oktober 2025
 
+## 🌟 Projektkontext
+
+DigiStars ist Teil des Child Resource Radar e.V. Projekts zur Förderung digitaler Innovationen für benachteiligte Kinder und Jugendliche in Deutschland. Das Projekt wird von der Deutschen Fernsehlotterie (Schwerpunkt Digitalisierung) gefördert.
+
+Mehr Informationen: [Projektvorstellung](/mnt/project/Projektvorstellung__DigiStars_.pdf)
