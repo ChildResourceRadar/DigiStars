@@ -14,6 +14,11 @@ Ein intelligenter n8n-Workflow zur automatisierten Recherche, Kategorisierung un
 - [Troubleshooting](#troubleshooting)
 - [Lizenz](#lizenz)
 
+## Weitere Dokumente
+- [Schnellstart](docs/QUICKSTART.md) 
+- [Setup](docs/SETUP.md) 
+- [Workflow-Guide](docs/WORKFLOW-GUIDE.md)
+
 ## 🎯 Überblick
 
 DigiStars ist ein automatisierter Workflow zur Identifizierung, Bewertung und Katalogisierung digitaler Innovationen für Kinder und Jugendliche. Der Workflow kombiniert Web-Scraping, KI-gestützte Kategorisierung und strukturierte Datenspeicherung.
@@ -502,7 +507,7 @@ Dieses Projekt ist unter der MIT-Lizenz lizenziert - siehe [LICENSE](LICENSE) Da
 
 ## 👥 Autoren
 
-- **Dein Name** - *Initial work*
+- **Manuel Dingemann** - *Initial work*
 
 ## 🙏 Danksagungen
 
@@ -515,10 +520,10 @@ Dieses Projekt ist unter der MIT-Lizenz lizenziert - siehe [LICENSE](LICENSE) Da
 
 Bei Fragen oder Problemen:
 - GitHub Issues erstellen
-- E-Mail: deine-email@example.com
+- E-Mail: manuel@captain-ai.de
 
 ---
 
-**Version:** 1.0.0  
+**Version:** 0.3
 **Letztes Update:** Oktober 2025
 
