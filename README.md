@@ -17,7 +17,7 @@ Ein intelligenter n8n-Workflow zur automatisierten Recherche, Kategorisierung un
 - [Systemarchitektur](#-systemarchitektur)
 - [Voraussetzungen](#-voraussetzungen)
 - [Installation](#-installation)
-- [Konfiguration](#-konfiguration)
+- [Konfiguration](#konfiguration)
 - [Verwendung](#-verwendung)
 - [Workflow-Details](#-workflow-details)
 - [Troubleshooting](#-troubleshooting)
