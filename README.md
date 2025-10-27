@@ -12,16 +12,16 @@ Ein intelligenter n8n-Workflow zur automatisierten Recherche, Kategorisierung un
 
 ## 📋 Inhaltsverzeichnis
 
-- [Überblick](#überblick)
-- [Features](#features)
-- [Systemarchitektur](#systemarchitektur)
-- [Voraussetzungen](#voraussetzungen)
-- [Installation](#installation)
-- [Konfiguration](#konfiguration)
-- [Verwendung](#verwendung)
-- [Workflow-Details](#workflow-details)
-- [Troubleshooting](#troubleshooting)
-- [Lizenz](#lizenz)
+- [Überblick](#-überblick)
+- [Features](#-features)
+- [Systemarchitektur](#-systemarchitektur)
+- [Voraussetzungen](#-voraussetzungen)
+- [Installation](#-installation)
+- [Konfiguration](#-konfiguration)
+- [Verwendung](#-verwendung)
+- [Workflow-Details](#-workflow-details)
+- [Troubleshooting](#-troubleshooting)
+- [Lizenz](#-lizenz)
 
 ## 🎯 Überblick
 
