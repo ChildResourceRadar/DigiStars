@@ -2,6 +2,13 @@
 
 Dieses Dokument erklärt im Detail, wie der Workflow funktioniert und welche Nodes welche Aufgaben haben.
 
+
+## 📚 Weitere Ressourcen
+
+- [README.md](../README.md) - Projekt-Übersicht
+- [SETUP.md](docs/SETUP.md) - Einrichtungsanleitung
+- [QUICKSTART.md](QUICKSTART.md) - Detaillierte Konfiguration
+
 ## 📊 Workflow-Übersicht
 
 Der Workflow besteht aus 5 Hauptphasen:
@@ -753,13 +760,7 @@ Kategoriere als "Tool" nur wenn:
 }
 ```
 
-## 📚 Weitere Ressourcen
-
-- [README.md](README.md) - Projekt-Übersicht
-- [SETUP.md](SETUP.md) - Einrichtungsanleitung
-- [FAQ.md](FAQ.md) - Häufige Fragen
-- [CONFIGURATION.md](CONFIGURATION.md) - Detaillierte Konfiguration
 
 ---
 
-**Fragen zum Workflow?** Erstelle ein [GitHub Issue](https://github.com/your-repo/issues)
+**Fragen zum Workflow?** Erstelle ein [GitHub Issue](https://github.com/ChildResourceRadar/DigiStars/issues)
