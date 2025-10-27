@@ -35,6 +35,9 @@ DigiStars ist ein automatisierter Workflow zur Identifizierung, Bewertung und Ka
 - **Strukturierte Datenverwaltung** in Google Sheets
 - **Skalierbare Verarbeitung** mit Batch-Processing
 
+## Screenshot von v0.3
+<img width="1936" height="1045" alt="image" src="https://github.com/user-attachments/assets/61409ec0-22e6-4135-a5cf-36a40ae1f0e1" />
+
 ## ✨ Features
 
 ### 🔍 Multi-Source Search
@@ -206,7 +209,7 @@ docker pull crawl4ai/server:latest
 docker run -d --name crawl4ai -p 11235:11235 crawl4ai/server:latest
 ```
 
-## ⚙️ Konfiguration
+## Konfiguration
 
 ### Workflow-Modi
 
@@ -513,13 +516,13 @@ Dieses Projekt ist unter der MIT-Lizenz lizenziert - siehe [LICENSE](LICENSE) Da
 
 **Entwickelt von:** Child Resource Radar e.V.  
 **Projektleitung:** Dr. Juliane Petersen  
-**Workflow-Entwicklung:** Manuel Dingemann  
+**Workflow-Entwicklung:** [Manuel Dingemann](captain-ai.de)  
 **Website:** [childresourceradar.org](https://childresourceradar.org)
 
 **Danke an:**
 - DigiStars Projekt-Team
 - n8n Community
-- crawl4ai Contributors
+- [crawl4ai](https://github.com/unclecode/crawl4ai) Contributors
 - FireCrawl Team
 
 ## 📞 Support
