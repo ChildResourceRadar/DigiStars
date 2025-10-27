@@ -72,44 +72,44 @@ DigiStars ist ein automatisierter Workflow zur Identifizierung, Bewertung und Ka
 │   Input Layer   │
 ├─────────────────┤
 │ • Google Search │
-│ • EXA AI       │
+│ • EXA AI        │
 │ • Google Sheets │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│ Deduplication  │
+│ Deduplication   │
 ├─────────────────┤
-│ • URL Check    │
-│ • Domain Check │
+│ • URL Check     │
+│ • Domain Check  │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│  Web Scraping  │
+│  Web Scraping   │
 ├─────────────────┤
-│ • crawl4ai     │
-│ • FireCrawl    │
-│ • PDF Handler  │
+│ • crawl4ai      │
+│ • FireCrawl     │
+│ • PDF Handler   │
 └────────┬────────┘
          │
          ▼
-┌─────────────────┐
-│  AI Analysis   │
-├─────────────────┤
+┌─────────────────-┐
+│  AI Analysis     │
+├─────────────────-┤
 │ • Kategorisierung│
-│ • Extraktion   │
-│ • o4-mini      │
-│ • gpt-4.1-nano │
-└────────┬────────┘
+│ • Extraktion     │
+│ • o4-mini        │
+│ • gpt-4.1-nano   │
+└────────┬───────-─┘
          │
          ▼
 ┌─────────────────┐
-│ Data Storage   │
+│ Data Storage    │
 ├─────────────────┤
-│ • Google Sheets│
-│ • Status Update│
-│ • Validation   │
+│ • Google Sheets │
+│ • Status Update │
+│ • Validation    │
 └─────────────────┘
 ```
 
@@ -144,19 +144,13 @@ git clone https://github.com/ChildResourceRadar/DigiStars.git
 cd DigiStars
 ```
 
-### 2. Environment Variables einrichten
-```bash
-cp env.example .env
-# Bearbeite .env und füge deine API Keys ein
-```
-
-### 3. n8n Workflow importieren
+### 2. n8n Workflow importieren
 1. Öffne n8n im Browser
 2. Navigiere zu **Workflows** → **Import from File**
 3. Wähle `workflows/digistars-n8n-scraper-categorizer.json`
 4. Bestätige den Import
 
-### 4. Credentials einrichten
+### 3. Credentials einrichten
 
 #### Google Custom Search
 ```
@@ -190,7 +184,7 @@ Node: "FireCrawl Scraper"
 - Credentials: API Key eingeben
 ```
 
-### 5. Google Sheet vorbereiten
+### 4. Google Sheet vorbereiten
 
 Erstelle ein Google Sheet mit folgenden Spalten:
 ```
@@ -206,7 +200,7 @@ Nodes: "Neu erfasste abrufen", "Update", "Neu", etc.
 Document ID: YOUR_SHEET_ID
 ```
 
-### 6. crawl4ai Docker Container starten
+### 5. crawl4ai Docker Container starten
 ```bash
 docker pull crawl4ai/server:latest
 docker run -d --name crawl4ai -p 11235:11235 crawl4ai/server:latest
