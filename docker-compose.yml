@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  # n8n Workflow Automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: digistars-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      # Basic Auth (Ändere diese Werte!)
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=changeme123!
+      
+      # Host Configuration
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      
+      # Execution Settings
+      - EXECUTIONS_TIMEOUT=3600
+      - EXECUTIONS_TIMEOUT_MAX=7200
+      - N8N_PAYLOAD_SIZE_MAX=16
+      
+      # Log Level
+      - N8N_LOG_LEVEL=info
+      
+      # Timezone
+      - GENERIC_TIMEZONE=Europe/Berlin
+      - TZ=Europe/Berlin
+    
+    volumes:
+      # Persistente Daten
+      - n8n_data:/home/node/.n8n
+      # Optional: Lokale Workflows
+      # - ./workflows:/home/node/.n8n/workflows
+    
+    depends_on:
+      - crawl4ai
+    
+    networks:
+      - digistars-network
+    
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # crawl4ai Web Scraping Service
+  crawl4ai:
+    image: crawl4ai/server:latest
+    container_name: digistars-crawl4ai
+    restart: unless-stopped
+    ports:
+      - "11235:11235"
+    
+    networks:
+      - digistars-network
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11235/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    
+    # Optional: Resource Limits
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '2'
+    #       memory: 4G
+    #     reservations:
+    #       cpus: '1'
+    #       memory: 2G
+
+  # Optional: PostgreSQL für n8n (statt SQLite)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: digistars-postgres
+  #   restart: unless-stopped
+  #   environment:
+  #     - POSTGRES_DB=n8n
+  #     - POSTGRES_USER=n8n
+  #     - POSTGRES_PASSWORD=n8n_password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - digistars-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U n8n"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # Optional: Redis für Queue Mode
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: digistars-redis
+  #   restart: unless-stopped
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - digistars-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+
+volumes:
+  n8n_data:
+    driver: local
+  # postgres_data:
+  #   driver: local
+  # redis_data:
+  #   driver: local
+
+networks:
+  digistars-network:
+    driver: bridge

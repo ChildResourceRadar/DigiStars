@@ -1,0 +1,3636 @@
+{
+  "name": "Digistars - Scrape & Crawl",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "YOUR_API_KEY"
+            },
+            {
+              "name": "q",
+              "value": "Cyber-Mobbing App Jugendliche Deutschland"
+            },
+            {
+              "name": "cx",
+              "value": "YOUR_CUSTOM_SEARCH_ENGINE_ID"
+            },
+            {
+              "name": "num",
+              "value": "5"
+            },
+            {
+              "name": "gl",
+              "value": "de"
+            },
+            {
+              "name": "lr",
+              "value": "lang_de"
+            },
+            {
+              "name": "start",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -128,
+        -2976
+      ],
+      "id": "e897df2f-9430-4795-9518-8b5211a1f424",
+      "name": "Google Suche"
+    },
+    {
+      "parameters": {
+        "url": "={{ ($json.URL || $json.link).replace(/^(https?:\\/\\/)www\\./i, '$1') }}",
+        "enableDebugLogs": true
+      },
+      "type": "n8n-nodes-firecrawl-scraper.fireCrawlScraper",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        -2512
+      ],
+      "id": "1dfe87f6-d1d5-4a47-9a6a-ac570a1ee5f5",
+      "name": "FireCrawl Scraper",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "YOUR_FIRECRAWL_CREDENTIAL_ID",
+          "name": "Firecrawl your-email@example.com"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.tools",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -1008
+      ],
+      "id": "d8018e87-334b-43dd-981f-5da0841df285",
+      "name": "Links"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Erweiterte URL Normalisierung OHNE www\n// Modus: Run Once for Each Item\n\n// Überspringe Items ohne URL\nif (!$json.url) {\n  return null;  // Item wird übersprungen\n}\n\nlet url = $json.url\n  .trim()                                // Leerräume am Anfang/Ende entfernen\n  .replace(/\\/+$/, '')                   // Mehrfache Trailing slashes entfernen\n  .replace(/^http:\\/\\//, 'https://');    // http zu https\n\n// Füge https:// hinzu falls fehlt\nif (!url.startsWith('https://')) {\n  url = 'https://' + url;\n}\n\n// www-Normalisierung: Entferne \"www.\" falls vorhanden\nurl = url.replace('://www.', '://');\n\n// Füge einen einzelnen trailing slash hinzu\nurl = url + '/';\n\nreturn { \n  name: $json.name,\n  URL: url, // Beachten Sie, dass das Output-Feld \"URL\" heißt\n  original_url: $json.url  // Optional: Original URL beibehalten für debugging\n};\n\n// --- BEISPIELE MIT DEM NEUEN CODE ---\n\n// Input:  { url: \"fideo.de/path\", name: \"Test\" }\n// Output: { name: \"Test\", URL: \"https://fideo.de/path/\", original_url: \"fideo.de/path\" }\n\n// Input:  { url: \"https://www.example.com/\", name: \"Test\" }  \n// Output: { name: \"Test\", URL: \"https://example.com/\", original_url: \"https://www.example.com/\" }\n\n// Input:  { url: \"http://example.com\", name: \"Test\" }\n// Output: { name: \"Test\", URL: \"https://example.com/\", original_url: \"http://example.com\" }\n\n// Input:  { url: \"www.spiegel.de\", name: \"Test\" }\n// Output: { name: \"Test\", URL: \"https://spiegel.de/\", original_url: \"www.spiegel.de\" }"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        -1008
+      ],
+      "id": "568f98eb-704d-4f17-b1ec-a07947863323",
+      "name": "URLs normalisieren"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1745465371,
+          "mode": "list",
+          "cachedResultName": "Google-Suche",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ez4whq3iLbfXG-e2mUa38q8_5SVDqmvijXe5ZxrrxTg/edit#gid=1745465371"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Neu erfasst"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        144,
+        -2320
+      ],
+      "id": "53c08e93-0236-428d-b341-7b387abcd625",
+      "name": "Neu erfasste abrufen",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Your Google Sheets Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d0b5c18b-d2e1-4ecd-b020-00aa8d629480",
+              "name": "name",
+              "value": "={{ $('Merge3').item.json.data.metadata.title }}",
+              "type": "string"
+            },
+            {
+              "id": "9ee91c3e-ca0b-4939-9013-8e13a9c60579",
+              "name": "response",
+              "value": "={{ $json.output.reasoning }}",
+              "type": "string"
+            },
+            {
+              "id": "edcdeff7-4c62-465a-8104-a9dbd723c239",
+              "name": "URL",
+              "value": "={{ $('Merge3').item.json.debug.url }}",
+              "type": "string"
+            },
+            {
+              "id": "f5b3cc53-05a8-4140-82fe-a76e5fb46bfd",
+              "name": "data.metadata['og:title']",
+              "value": "={{ $('Merge3').item.json.data.metadata['og:title'] }}",
+              "type": "string"
+            },
+            {
+              "id": "8b83281d-e6bd-4689-9036-3f208ef3d81d",
+              "name": "output.tools",
+              "value": "={{ $json.output.tools }}",
+              "type": "array"
+            },
+            {
+              "id": "7f4fbf34-0ef7-42e4-8eaa-2ba29f8f9152",
+              "name": "output.category",
+              "value": "={{ $json.output.category }}",
+              "type": "string"
+            },
+            {
+              "id": "f9cb5679-7ed3-4cbd-bd81-6414cf940990",
+              "name": "Input",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2928,
+        -2336
+      ],
+      "id": "16526309-6b3a-4925-b968-b3d9a4b39441",
+      "name": "Sammeln"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.category }}",
+                    "rightValue": "Tool",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fbf6007d-dbbe-4ccb-84b9-0710c7915c33"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Tool"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c9fbd9a4-a051-4900-929b-70189c27c1a7",
+                    "leftValue": "={{ $json.output.category }}",
+                    "rightValue": "Irrelevant",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Irrelevant"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c62d94d7-ed1b-4e3c-ad76-cd8c39bb5915",
+                    "leftValue": "={{ $json.output.category }}",
+                    "rightValue": "Liste",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Liste"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        992,
+        -1824
+      ],
+      "id": "ba6a6d7c-c381-40d6-b2dd-9ee73fdcf2f9",
+      "name": "Tool/Liste/Irrelevant"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        -2320
+      ],
+      "id": "97be009f-1920-4a82-9545-3b261e4a6ae9",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-nano"
+        },
+        "options": {
+          "maxRetries": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1936,
+        -1680
+      ],
+      "id": "1549d0cf-053f-4181-b9ba-93ea5f6ce90b",
+      "name": "gpt-4.1-nano",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPEN_AI_CREDENTIAL_ID",
+          "name": "Your Open Ai Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "o4-mini",
+          "mode": "list",
+          "cachedResultName": "o4-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1312,
+        -1936
+      ],
+      "id": "56304f1c-9b3a-4998-a7c9-fa8ca9d85a00",
+      "name": "o4-mini",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPEN_AI_CREDENTIAL_ID",
+          "name": "Your Open Ai Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Merge3').item.json.data.markdown }}",
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\n  \"Art der Webseite\": \"Informationsportal\",\n  \"Kurzbeschreibung\": \"Eine Webseite, die Jugendlichen Informationen und Hilfsangebote bei psychischen Erkrankungen bietet.\",\n  \"Zielgruppe\": \"Jugendliche und junge Erwachsene\",\n  \"Plattform\": \"Web, Mobile App\",\n  \"Altersgruppe\": \"14-25 Jahre\",\n  \"Verfügbare Sprachen\": [\"Deutsch\", \"Englisch\"],\n  \"Kosten\": \"Kostenlos\",\n  \"Kategorie\": \"Suizidprävention\",\n  \"Organisation\": \"Diskussionsforum Depression e.V.\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        1456,
+        -1872
+      ],
+      "id": "815ce3b2-122a-41c7-9b8d-28a10030edb2",
+      "name": "Irrelevant Details"
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Merge3').item.json.data.markdown }}",
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\n  \"Art der Webseite\": \"Informationsportal\",\n  \"Kurzbeschreibung\": \"Eine Webseite, die Jugendlichen Informationen und Hilfsangebote bei psychischen Erkrankungen bietet.\",\n  \"Zielgruppe\": \"Jugendliche und junge Erwachsene\",\n  \"Plattform\": \"Web, Mobile App\",\n  \"Altersgruppe\": \"14-25 Jahre\",\n  \"Verfügbare Sprachen\": [\"Deutsch\", \"Englisch\"],\n  \"Kosten\": \"Kostenlos\",\n  \"Kategorie\": \"Suizidprävention\",\n  \"Organisation\": \"Diskussionsforum Depression e.V.\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        1456,
+        -1664
+      ],
+      "id": "955decf7-80fe-44fa-bc0a-208536f088be",
+      "name": "Liste Details"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1745465371,
+          "mode": "list",
+          "cachedResultName": "Google-Suche",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ez4whq3iLbfXG-e2mUa38q8_5SVDqmvijXe5ZxrrxTg/edit#gid=1745465371"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.name }}",
+            "Status": "Neu erfasst",
+            "URL": "={{ $('URLs normalisieren').item.json.URL }}",
+            "Letztes Update": "={{ $now.setZone(\"Europe/Berlin\").format('yyyy-MM-dd t') }}",
+            "Crawl-Datum": "={{ $now.setZone(\"Europe/Berlin\").format('yyyy-MM-dd tt') }}",
+            "Ersteller": "=Liste auf {{ $('Merge3').item.json.debug.url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Duplikats-Check",
+              "displayName": "Duplikats-Check",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fachteam-\nBewertung",
+              "displayName": "Fachteam-\nBewertung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Kommentar",
+              "displayName": "Kommentar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Art der Webseite",
+              "displayName": "Art der Webseite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kurzbeschreibung",
+              "displayName": "Kurzbeschreibung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Zielgruppe",
+              "displayName": "Zielgruppe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Plattform",
+              "displayName": "Plattform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Altersgruppe",
+              "displayName": "Altersgruppe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Verfügbare Sprachen",
+              "displayName": "Verfügbare Sprachen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kosten",
+              "displayName": "Kosten",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kategorie",
+              "displayName": "Kategorie",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Organisation",
+              "displayName": "Organisation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Snippet",
+              "displayName": "Snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ersteller",
+              "displayName": "Ersteller",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Crawl-Datum",
+              "displayName": "Crawl-Datum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Letztes Update",
+              "displayName": "Letztes Update",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2880,
+        -1040
+      ],
+      "id": "6dfe2c40-85a0-4a97-848a-a7f8f5715bc3",
+      "name": "Anfügen aus Liste",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Your Google Sheets Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Merge3').item.json.data.markdown }}",
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\n  \"Art der Webseite\": \"Informationsportal\",\n  \"Kurzbeschreibung\": \"Eine Webseite, die Jugendlichen Informationen und Hilfsangebote bei psychischen Erkrankungen bietet.\",\n  \"Zielgruppe\": \"Jugendliche und junge Erwachsene\",\n  \"Plattform\": \"Web, Mobile App\",\n  \"Altersgruppe\": \"14-25 Jahre\",\n  \"Verfügbare Sprachen\": [\"Deutsch\", \"Englisch\"],\n  \"Kosten\": \"Kostenlos\",\n  \"Kategorie\": \"Suizidprävention\",\n  \"Organisation\": \"Diskussionsforum Depression e.V.\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        1456,
+        -2080
+      ],
+      "id": "43af8a49-e112-41d4-ab26-62f3d0250e6d",
+      "name": "Tool | Details"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "8WTlg0HM1AyrGPmb",
+          "mode": "list",
+          "cachedResultName": "Digistars - deduplication"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        -2608
+      ],
+      "name": "Call Digistars - deduplication",
+      "id": "cd031f2f-3de7-42c8-8704-1a1f4dd7a8a9"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('SetInput').item.json.Input }}",
+                    "rightValue": "Recherche",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bb3cc621-6ca2-4077-9204-07dfd99c7bb2"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Recherche"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "af7c1b49-50a9-4a91-99f3-b10809e13322",
+                    "leftValue": "={{ $('SetInput').item.json.Input }}",
+                    "rightValue": "Sheets",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sheets"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2416,
+        -1872
+      ],
+      "id": "fc79fa72-5e85-4ec7-8a6b-0f408d0eb0ec",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1745465371,
+          "mode": "list",
+          "cachedResultName": "Google-Suche",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ez4whq3iLbfXG-e2mUa38q8_5SVDqmvijXe5ZxrrxTg/edit#gid=1745465371"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $('Tool/Liste/Irrelevant').item.json.output.category === \"Tool\" ? \"Prüfen\" : \"Geprüft-KI\" }}",
+            "Letztes Update": "={{ $now.setZone(\"Europe/Berlin\").format('yyyy-MM-dd tt') }}",
+            "Score": "={{ $('Sammeln').item.json.output.category }}",
+            "Art der Webseite": "={{ $json.output['Art der Webseite'] }}",
+            "Kurzbeschreibung": "={{ $json.output.Kurzbeschreibung }}",
+            "Organisation": "={{ $json.output.Organisation }}",
+            "Kategorie": "={{ $json.output.Kategorie }}",
+            "Kosten": "={{ $json.output.Kosten }}",
+            "Verfügbare Sprachen": "={{ $json.output['Verfügbare Sprachen'] }}",
+            "Altersgruppe": "={{ $json.output.Altersgruppe }}",
+            "Zielgruppe": "={{ $json.output.Zielgruppe }}",
+            "Plattform": "={{ $json.output.Plattform }}",
+            "Crawl-Datum": "={{ $json.node_checks['Google Suche'].value && $now.setZone(\"Europe/Berlin\").format('yyyy-MM-dd tt') }}",
+            "Name": "={{ $('Sammeln').item.json.name }}",
+            "row_number": "={{ $('Neu erfasste abrufen').item.json.row_number }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Duplikats-Check",
+              "displayName": "Duplikats-Check",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fachteam-\nBewertung",
+              "displayName": "Fachteam-\nBewertung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Kommentar",
+              "displayName": "Kommentar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Art der Webseite",
+              "displayName": "Art der Webseite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kurzbeschreibung",
+              "displayName": "Kurzbeschreibung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Zielgruppe",
+              "displayName": "Zielgruppe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Plattform",
+              "displayName": "Plattform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Altersgruppe",
+              "displayName": "Altersgruppe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Verfügbare Sprachen",
+              "displayName": "Verfügbare Sprachen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kosten",
+              "displayName": "Kosten",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kategorie",
+              "displayName": "Kategorie",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Organisation",
+              "displayName": "Organisation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Snippet",
+              "displayName": "Snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Ersteller",
+              "displayName": "Ersteller",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Crawl-Datum",
+              "displayName": "Crawl-Datum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Letztes Update",
+              "displayName": "Letztes Update",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2688,
+        -1856
+      ],
+      "id": "c35e2734-b2b6-4054-8c2f-a6b2e09ec2d5",
+      "name": "Update",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Your Google Sheets Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1745465371,
+          "mode": "list",
+          "cachedResultName": "Google-Suche",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ez4whq3iLbfXG-e2mUa38q8_5SVDqmvijXe5ZxrrxTg/edit#gid=1745465371"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $('Tool/Liste/Irrelevant').item.json.output.category === \"Tool\" ? \"Prüfen\" : \"Geprüft-KI\" }}",
+            "Letztes Update": "={{ $now.setZone(\"Europe/Berlin\").format('yyyy-MM-dd tt') }}",
+            "Score": "={{ $('Sammeln').item.json.output.category }}",
+            "Art der Webseite": "={{ $json.output['Art der Webseite'] }}",
+            "Kurzbeschreibung": "={{ $json.output.Kurzbeschreibung }}",
+            "Organisation": "={{ $json.output.Organisation }}",
+            "Kategorie": "={{ $json.output.Kategorie }}",
+            "Kosten": "={{ $json.output.Kosten }}",
+            "Verfügbare Sprachen": "={{ $json.output['Verfügbare Sprachen'] }}",
+            "Altersgruppe": "={{ $json.output.Altersgruppe }}",
+            "Zielgruppe": "={{ $json.output.Zielgruppe }}",
+            "Plattform": "={{ $json.output.Plattform }}",
+            "Crawl-Datum": "={{ $('SetInput').item.json.Input && $now.setZone(\"Europe/Berlin\").format('yyyy-MM-dd tt') }}",
+            "Name": "={{ $('Sammeln').item.json.name }}",
+            "URL": "={{ $('Sammeln').item.json.URL }}",
+            "Ersteller": "={{ $('Google-Input').item.json.Input }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Duplikats-Check",
+              "displayName": "Duplikats-Check",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fachteam-\nBewertung",
+              "displayName": "Fachteam-\nBewertung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Kommentar",
+              "displayName": "Kommentar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Art der Webseite",
+              "displayName": "Art der Webseite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kurzbeschreibung",
+              "displayName": "Kurzbeschreibung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Zielgruppe",
+              "displayName": "Zielgruppe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Plattform",
+              "displayName": "Plattform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Altersgruppe",
+              "displayName": "Altersgruppe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Verfügbare Sprachen",
+              "displayName": "Verfügbare Sprachen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kosten",
+              "displayName": "Kosten",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kategorie",
+              "displayName": "Kategorie",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Organisation",
+              "displayName": "Organisation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Snippet",
+              "displayName": "Snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Ersteller",
+              "displayName": "Ersteller",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Crawl-Datum",
+              "displayName": "Crawl-Datum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Letztes Update",
+              "displayName": "Letztes Update",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2688,
+        -2048
+      ],
+      "id": "ec826dd8-8562-41e9-ada0-e060097fbeba",
+      "name": "Neu",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Your Google Sheets Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2112,
+        -1888
+      ],
+      "id": "59a94ba9-4c6c-4964-8323-e4c90f93142c",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "URL",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -1008
+      ],
+      "id": "d3cf8a82-2bb8-449d-a753-4682d1459b40",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Code Node für Try-Catch Prüfung (Run Once for Each Item)\n// Prüft ob ein bestimmter Node existiert und Daten hat\n\n// Aktuelles Item aus dem Input\nconst currentItem = $input.item.json;\n\nlet result = {\n  // Behalte alle ursprünglichen Daten\n  ...currentItem\n};\n\ntry {\n  // Versuche auf den Node zuzugreifen\n  const targetNode = $('Neu erfasste abrufen');\n  \n  // Prüfe ob der Node Daten hat\n  if (targetNode && targetNode.item && targetNode.item.json) {\n    const rowNumber = targetNode.item.json.row_number;\n    \n    if (rowNumber !== undefined && rowNumber !== null) {\n      result.check_status = \"success\";\n      result.has_data = true;\n      result.target_row_number = rowNumber;\n      result.check_message = \"Node gefunden und Daten vorhanden\";\n    } else {\n      result.check_status = \"success\";\n      result.has_data = false;\n      result.target_row_number = null;\n      result.check_message = \"Node gefunden aber row_number ist leer\";\n    }\n  } else {\n    result.check_status = \"success\";\n    result.has_data = false;\n    result.target_row_number = null;\n    result.check_message = \"Node gefunden aber keine Daten\";\n  }\n  \n} catch (error) {\n  // Fehler beim Zugriff auf den Node (z.B. \"No path back to node\")\n  result.check_status = \"error\";\n  result.has_data = false;\n  result.target_row_number = null;\n  result.check_message = error.message || \"Fehler beim Zugriff auf Node\";\n  result.error_type = error.name || \"Unknown\";\n}\n\n// Route für Switch Node\nresult.route = result.check_status === \"success\" && result.has_data ? \"has_data\" : \"no_data\";\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1872,
+        -2384
+      ],
+      "id": "0e304dce-fbdb-4589-9418-418098661375",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1745465371,
+          "mode": "list",
+          "cachedResultName": "Google-Suche",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ez4whq3iLbfXG-e2mUa38q8_5SVDqmvijXe5ZxrrxTg/edit#gid=1745465371"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "=Fehler",
+            "Letztes Update": "={{ $now.setZone(\"Europe/Berlin\").format('yyyy-MM-dd t') }}",
+            "URL": "={{ $('Call Digistars - deduplication').item.json.URL }}",
+            "Kurzbeschreibung": "={{ $('FireCrawl Scraper').item.json.error }}",
+            "Ersteller": "={{ $('SetInput').item.json.Input }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Duplikats-Check",
+              "displayName": "Duplikats-Check",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fachteam-\nBewertung",
+              "displayName": "Fachteam-\nBewertung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Kommentar",
+              "displayName": "Kommentar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Art der Webseite",
+              "displayName": "Art der Webseite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kurzbeschreibung",
+              "displayName": "Kurzbeschreibung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Zielgruppe",
+              "displayName": "Zielgruppe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Plattform",
+              "displayName": "Plattform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Altersgruppe",
+              "displayName": "Altersgruppe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Verfügbare Sprachen",
+              "displayName": "Verfügbare Sprachen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kosten",
+              "displayName": "Kosten",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kategorie",
+              "displayName": "Kategorie",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Organisation",
+              "displayName": "Organisation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Snippet",
+              "displayName": "Snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Ersteller",
+              "displayName": "Ersteller",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Crawl-Datum",
+              "displayName": "Crawl-Datum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Letztes Update",
+              "displayName": "Letztes Update",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2304,
+        -2560
+      ],
+      "id": "24cc7d36-2bfb-43ad-b55a-81283c989407",
+      "name": "Fehler Google",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Your Google Sheets Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1745465371,
+          "mode": "list",
+          "cachedResultName": "Google-Suche",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ez4whq3iLbfXG-e2mUa38q8_5SVDqmvijXe5ZxrrxTg/edit#gid=1745465371"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "=Fehler",
+            "Letztes Update": "={{ $now.setZone(\"Europe/Berlin\").format('yyyy-MM-dd t') }}",
+            "row_number": "={{ $('Neu erfasste abrufen').item.json.row_number }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Duplikats-Check",
+              "displayName": "Duplikats-Check",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fachteam-\nBewertung",
+              "displayName": "Fachteam-\nBewertung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Kommentar",
+              "displayName": "Kommentar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Art der Webseite",
+              "displayName": "Art der Webseite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kurzbeschreibung",
+              "displayName": "Kurzbeschreibung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Zielgruppe",
+              "displayName": "Zielgruppe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Plattform",
+              "displayName": "Plattform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Altersgruppe",
+              "displayName": "Altersgruppe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Verfügbare Sprachen",
+              "displayName": "Verfügbare Sprachen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kosten",
+              "displayName": "Kosten",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kategorie",
+              "displayName": "Kategorie",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Organisation",
+              "displayName": "Organisation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Snippet",
+              "displayName": "Snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Ersteller",
+              "displayName": "Ersteller",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Crawl-Datum",
+              "displayName": "Crawl-Datum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Letztes Update",
+              "displayName": "Letztes Update",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2304,
+        -2368
+      ],
+      "id": "4eb874ee-0266-4fba-819a-5d19ede81ab3",
+      "name": "Fehler Sheets",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Your Google Sheets Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5a24b88c-ce03-4b53-9a7d-a0dad15d6bba",
+              "name": "Input",
+              "value": "Sheets",
+              "type": "string"
+            },
+            {
+              "id": "fc72f759-5968-4af2-9370-13685c298472",
+              "name": "URL",
+              "value": "={{ $json.URL }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        336,
+        -2320
+      ],
+      "id": "f4746fc2-5724-42d5-851a-61bb018a39ca",
+      "name": "Sheets-Input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ca858c93-858b-46e3-929d-da9ee27618c9",
+              "name": "Input",
+              "value": "={{ $json.Input }}",
+              "type": "string"
+            },
+            {
+              "id": "ce22fa3c-f8a0-4055-b5e7-9f414e78aaa1",
+              "name": "Google-Snippet",
+              "value": "={{ \n  $nodeExists('Google Suche') \n    ? $('Google Suche').item.json.first().snippet \n    : \"\" \n}}",
+              "type": "string"
+            },
+            {
+              "id": "3122b6a7-02a4-4918-8bee-82e0915b2f95",
+              "name": "URL",
+              "value": "={{ $json.URL }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        -2608
+      ],
+      "id": "fca396d4-13c3-42ec-b40f-6b0fba8dd383",
+      "name": "SetInput",
+      "notes": "{{ $('Google Suche').item.json.first().snippet }}"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5a24b88c-ce03-4b53-9a7d-a0dad15d6bba",
+              "name": "Input",
+              "value": "Recherche",
+              "type": "string"
+            },
+            {
+              "id": "4f068e40-e4de-4f5a-831c-09956f6fee9e",
+              "name": "URL",
+              "value": "={{ $json.URL }}",
+              "type": "string"
+            },
+            {
+              "id": "20660795-f824-4a65-ae2a-ee0da838e5b8",
+              "name": "items.snippet",
+              "value": "={{ \n  $nodeExists('Google Suche') \n    ? $('Google Suche').item.json.first().snippet \n    : \"\" \n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        368,
+        -2608
+      ],
+      "id": "64cdf18b-c80c-4d02-8cf1-1102f5bac271",
+      "name": "Google-Input"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('SetInput').item.json.Input }}",
+                    "rightValue": "Recherche",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bb3cc621-6ca2-4077-9204-07dfd99c7bb2"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Recherche"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "af7c1b49-50a9-4a91-99f3-b10809e13322",
+                    "leftValue": "={{ $('SetInput').item.json.Input }}",
+                    "rightValue": "Sheets",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sheets"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2080,
+        -2384
+      ],
+      "id": "2075bfc0-6e94-4866-be18-3242851934c1",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a06a871-91c2-479c-9d4a-cffe6f48b80f",
+              "name": "URL",
+              "value": "={{ $json.link.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -64,
+        -2608
+      ],
+      "id": "6baf295d-ef08-479c-9270-506771e43969",
+      "name": "URL Variable"
+    },
+    {
+      "parameters": {
+        "content": "## Input: Suchmaschinen\nFührt eine Suche für einen spezifischen Begriff aus und liefert bis zu 10 (Google) oder 100 (EXA) Ergebnisse",
+        "height": 656,
+        "width": 1360,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        -3088
+      ],
+      "typeVersion": 1,
+      "id": "c14926ea-a9a8-4dc7-a020-9bb971bf91e0",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Scrapen & einordnen\nEine Webseite wird:\n1. als Markdown gescraped\n2. Bewertet ob (Tool, Liste, irrelevant)\n3. Strukturiert ausgegeben",
+        "height": 656,
+        "width": 2336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        560,
+        -2848
+      ],
+      "typeVersion": 1,
+      "id": "611313fb-1345-420b-886f-441a75f7077b",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1388f292-2851-4c5c-8a25-9d6db8549f02",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "false",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1968,
+        -2704
+      ],
+      "id": "d55987d4-6c48-4aa2-b6c7-3f75cff0c5aa",
+      "name": "Firecrawl Fehlerbehandlung"
+    },
+    {
+      "parameters": {
+        "content": "## Details generieren\nHier werden die Eckdaten für die \nDatenbank aus dem Markdown extrahiert\n- Die Aufteilung in drei Stränge ist hifreich, um zusehen, wo die Seiten Entlagluen",
+        "height": 560,
+        "width": 2048
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        544,
+        -2096
+      ],
+      "typeVersion": 1,
+      "id": "e95eab67-f6c9-4a06-8fb7-2df29a3974ff",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Duplikatsprüfung für neu gefundene Links in \"Listen-Webseiten\"\n\n- Erste Prüfung: \"Gibt es diese exakte URL schon?\"\n- Zweite Prüfung: \"Gibt es diese Domain schon als Tool-Eintrag?\"\n\n**Beispiel:**\n\n- Input: https://example.com/new-page\n- Erste Prüfung: Ist https://example.com/new-page schon da?\n- Zweite Prüfung: Ist https://example.com/ schon als Tool markiert?\n\nAm Ende bekommst du nur URLs, die wirklich komplett neu sind - weder die exakte URL noch die Domain als Tool existieren bereits.\nDas ist eine ziemlich clevere Duplikatsvermeidung auf mehreren Ebenen!",
+        "height": 640,
+        "width": 2240
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        800,
+        -1504
+      ],
+      "typeVersion": 1,
+      "id": "1945dfd0-c6da-44cb-909a-98ff257d0c84",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Input: Google-Sheet\nPrüft \"Neu erfasste\" Links aus dem Google-Sheet",
+        "height": 256,
+        "width": 672,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -160,
+        -2416
+      ],
+      "typeVersion": 1,
+      "id": "5c566125-0b6e-494e-bed7-2d5bb9424399",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Start\nHiermit wird der Workflow ausgelöst",
+        "height": 256,
+        "width": 464,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -640,
+        -2416
+      ],
+      "typeVersion": 1,
+      "id": "dfc02f20-3ca6-4f85-95ad-12593a1fdd62",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "formTitle": "EXA Suchanfrage",
+        "formDescription": "Wonach soll ich suchen?",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Suche",
+              "placeholder": "German digital mental health tools launched 2024 for adolescents",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -960,
+        -2608
+      ],
+      "id": "5fac9453-9550-4433-9f6b-6299689ffa26",
+      "name": "Suchanfrage",
+      "webhookId": "b04102e7-b222-4a7c-bbc5-166029d9a16b"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1745465371,
+          "mode": "list",
+          "cachedResultName": "Google-Suche",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ez4whq3iLbfXG-e2mUa38q8_5SVDqmvijXe5ZxrrxTg/edit#gid=1745465371"
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -528,
+        -2864
+      ],
+      "id": "247d5bf1-8071-49a7-b767-e5a3e5b67478",
+      "name": "Existierende URLs",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Your Google Sheets Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "URL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -2608
+      ],
+      "id": "ac7e1863-3f43-445a-a42d-6c1200f2fbfb",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Erweiterte URL Normalisierung mit www-Handling\n// Modus: Run Once for Each Item\n// Überspringe Items ohne URL\nif (!$json.URL) {\n  return null;  // Item wird übersprungen\n}\nlet url = $json.URL\n  .replace(/\\/+$/, '')                    // Trailing slashes entfernen\n  .replace(/^http:\\/\\//, 'https://');     // http zu https\n// Füge https:// hinzu falls fehlt\nif (!url.startsWith('https://')) {\n  url = 'https://' + url;\n}\n// www-Normalisierung hinzufügen\n// Prüfe ob www. fehlt und füge es hinzu\nif (!url.includes('://www.')) {\n  // Ersetze das Protokoll + Domain durch Protokoll + www. + Domain\n  url = url.replace(/^https:\\/\\//, 'https://www.');\n}\n\n// Entferne alle Pfade - nur die Base-URL beibehalten\n// Finde das erste \"/\" nach dem Domain-Teil\nconst protocolEnd = url.indexOf('://') + 3;\nconst pathStart = url.indexOf('/', protocolEnd);\n\nif (pathStart !== -1) {\n  // Schneide alles nach dem ersten \"/\" ab\n  url = url.substring(0, pathStart);\n}\n\n// Füge trailing slash hinzu\nurl = url + '/';\n\n// Füge Anführungszeichen am Anfang und Ende der URL hinzu\nconst quotedUrl = '\"' + url + '\"';\n\nreturn { \n  URL: quotedUrl,\n  original_url: $json.URL  // Optional: Original URL beibehalten für debugging\n};\n\n// Beispiele:\n// Input:  { url: \"fideo.de/path\" }\n// Output: { URL: \"\\\"https://www.fideo.de/\\\"\", original_url: \"fideo.de/path\" }\n// Input:  { url: \"https://www.example.com/\" }  \n// Output: { URL: \"\\\"https://www.example.com/\\\"\", original_url: \"https://www.example.com/\" }\n// Input:  { url: \"http://example.com\" }\n// Output: { URL: \"\\\"https://www.example.com/\\\"\", original_url: \"http://example.com\" }"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        -2864
+      ],
+      "id": "0d23db9d-29e2-4de5-bfb6-9a96d75721bb",
+      "name": "zu Base-URLs für EXA"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.exa.ai/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "YOUR_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $('EXA Suchanfrage').item.json.Suche }}\",\n  \"text\": true,\n  \"num_results\": {{ $('EXA Suchanfrage').item.json.num_results }},\n  \"excludeDomains\": [{{ $json.URL }}]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -496,
+        -2608
+      ],
+      "id": "716c811e-2211-45f4-b7a9-b5bc9fad6348",
+      "name": "EXA Suche"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -2976
+      ],
+      "id": "3314eb8f-c76b-4bea-b3be-6f063706e9cb",
+      "name": "Split Out - Google"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {
+          "destinationFieldName": "link"
+        }
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -2608
+      ],
+      "id": "b9259de0-0624-48d5-a95b-f7ee29e28b99",
+      "name": "Split Out - EXA"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d16b23a-81b5-4df8-91a9-714cd5f53aa0",
+              "name": "Suche",
+              "value": "Deutschland Jugend digitale Hilfe neu",
+              "type": "string"
+            },
+            {
+              "id": "430dcbe9-70e6-4c2e-9636-18facd63bdb9",
+              "name": "num_results",
+              "value": "50",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -768,
+        -2864
+      ],
+      "id": "3f1a00e4-dd6b-4dd2-9276-e2b53985e3bd",
+      "name": "EXA Suchanfrage"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Token-Begrenzung für Markdown Content\n// n8n Code Node - \"Run once for each item\" Modus\n\nconst maxTokens = 20000;\nconst maxChars = maxTokens * 4; // Grober Schätzer: 4 Zeichen = 1 Token\n\n// Hole den Markdown-Content vom aktuellen Item\nlet markdown = $json.data.markdown;\n\nconst originalLength = markdown.length;\nlet truncated = false;\n\n// Prüfe ob Kürzung nötig ist\nif (markdown.length > maxChars) {\n  markdown = markdown.substring(0, maxChars) + \"\\n\\n... [Content wurde nach 100k Tokens abgeschnitten]\";\n  truncated = true;\n}\n\n// Einfache Token-Schätzung\nconst estimatedTokens = parseInt(markdown.length / 4);\n\nreturn {\n  ...$json, // Behalte alle ursprünglichen Felder\n  data: {\n    ...($json.data || {}), // Behalte andere data-Felder\n    markdown: markdown // Ersetze nur das markdown-Feld\n  },\n  truncated: truncated,\n  originalLength: originalLength,\n  finalLength: markdown.length,\n  estimatedTokens: estimatedTokens\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        -2720
+      ],
+      "id": "9d2ed808-1d8b-4efb-a7fa-ed12eacdf345",
+      "name": "Auf 20k Tokens begrenzen"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11235/md",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"url\": \"{{ $json.URL.replace(/^(https?:\\/\\/)www\\./i, '$1') }}\",\n  \"f\": \"fit\",\n  \"q\": null,\n  \"c\": \"0\"\n}\n",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        -2608
+      ],
+      "id": "88297e7f-d8cc-4522-8844-e8815c798dae",
+      "name": "crawl4ai",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"success\": {{ $json.error ? false : $json.success }},\n  \"data\": {\n    \"success\": {{ $json.error ? false : $json.success }},\n    \"markdown\": {{ JSON.stringify($json.error ? \"FEHLER: Die URL konnte nicht gecrawlt werden. Details: \" + $json.error.message : $json.markdown) }}\n  },\n  \"debug\": {\n    \"url\": {{ JSON.stringify($json.error ? $('SetInput').item.json.URL : $json.url) }}\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1536,
+        -2720
+      ],
+      "id": "c4f1dcfe-2bfc-4451-8d9b-54787512d9d2",
+      "name": "output einsortieren"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1744,
+        -2704
+      ],
+      "id": "e8855b8b-cecb-4cd4-9c51-26bba88eac5d",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "o4-mini",
+          "mode": "list",
+          "cachedResultName": "o4-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2496,
+        -2496
+      ],
+      "id": "cad50865-d3d2-4997-bbbb-ad7091b9bfc5",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPEN_AI_CREDENTIAL_ID",
+          "name": "Your Open Ai Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"reasoning\": \"Die Seite ist ein redaktioneller Artikel, der verschiedene digitale Angebote zur Unterstützung von Jugendlichen bei Depressionen vorstellt und verlinkt, aber nicht selbst das offizielle Portal eines einzelnen Tools ist.\",\n  \"tools\": [\n    {\n      \"name\": \"FIDEO\",\n      \"url\": \"https://fideo.de/\"\n    },\n    {\n      \"name\": \"Stiftung Deutsche Depressionshilfe\",\n      \"url\": \"http://www.deutsche-depressionshilfe.de\"\n    },\n    {\n      \"name\": \"Info-Telefon-Depression\",\n      \"url\": null\n    },\n    {\n      \"name\": \"DAJEB\",\n      \"url\": \"http://www.dajeb.de\"\n    },\n    {\n      \"name\": \"Nummer gegen Kummer\",\n      \"url\": null\n    },\n    {\n      \"name\": \"Online-Beratung für Jugendliche\",\n      \"url\": \"http://www.jugendnotmail.de\"\n    },\n    {\n      \"name\": \"Mailberatung in Krisen und bei Suizidgedanken\",\n      \"url\": \"http://www.u25-deutschland.de\"\n    }\n  ],\n  \"category\": \"Liste\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2720,
+        -2528
+      ],
+      "id": "3e8ac736-8a63-4de9-b676-0fa1c0bd3119",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# Quelle\n{{ $json.debug.url }}\n\n# Google Snippet (falls vorhanden)\n\n\n# Webseite als Markdown\n {{ $json.data.markdown }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Entscheide anhand von firecrawl-Markdown einer Webseite, zu welcher der folgenden Kategorien sie gehört. Gib zusätzlich für jede gefundene Tool-Nennung den Namen und – falls verlinkt – die URL des/der Tools an. Orientiere dich ausschließlich an den präzisierten Definitionen und stelle sicher, dass Seiten, die nur über ein Tool berichten oder darauf verlinken, aber nicht die offizielle Tool-Seite sind, konsequent als \"Liste\" (Empfehlung/Kuration) eingestuft werden.\n\n**Kategorien**\n\nA) Tool:  \nDie Webseite ist die offizielle Seite eines einzelnen digitalen Tools, einer App oder eines Angebots, das konkret und unmittelbar Kindern und Jugendlichen hilft (z.B. Download-/Startseite, offizielle Projektseite, konkrete Nutzung direkt möglich) und auf deutsch verfügbar ist.\n\nB) Liste:  \nDie Webseite berichtet, empfiehlt, vergleicht oder kuratiert (eins oder mehrere) relevante Tools für Kinder und Jugendliche in Deutschland – auch wenn ein einzelnes Tool ausführlich beschrieben oder ausschließlich ein einzelnes Tool behandelt wird. Auch wenn das Tool nur vorgestellt oder darauf verlinkt wird, NICHT aber die offizielle Seite ist, gilt immer \"Liste\". Eine Liste enthält immer mindestens ein Array-Element. Nur deutschsprachige Seiten können als Liste kategorisiert werden. Wenn eine Liste nicht deutsch ist, dann als c) irrelevant einsortieren.\n\nC) Irrelevant:  \nDie Seite ist thematisch nicht relevant für das DigiStars-Projekt (keines der genannten Themen, keine für Kinder/Jugendliche relevante digitale Innovation oder Tool) oder die Seite ist nur auf Englisch verfügbar.\n\n**Projektbeschreibung (Kontext):**  \nDigiStars ist ein Info-, Übersichts- und Vergleichsportal für digitale Innovationen, die die Lebenssituation von Kindern und Jugendlichen in Deutschland verbessern können. Es umfasst Tools zu mentaler Gesundheit, Schutz vor Gewalt, Schule, Sucht, Aufklärung usw.\n\n**Vorgehen:**\n\n- Analysiere den firecrawl-Markdown-Inhalt bezüglich Zielgruppe, Themen und Seitentyp.\n- Überprüfe, ob das Angebot ein eigenständiges digitales Tool für Kinder/Jugendliche in Deutschland ist UND ob es sich um die offizielle Seite des Tools handelt (z.B. Downloadseite, direkte Produktseite, offizieller Anbieter).\n- Wenn die Seite auf deutsch über ein oder mehrere Tools berichtet, diese beschreibt, vergleicht, empfiehlt oder nur verlinkt (insbesondere auf die offizielle Tool-Seite), aber nicht selbst das offizielle, operative Angebot ist, dann immer \"Liste\" wählen – auch bei nur einem Tool!\n- \"Tool\" nur, wenn nachweislich die offizielle Produktseite, der Anbieter oder das direkte Angebot des Tools präsent ist.\n- Triff deine finale Kategorie-Auswahl erst NACH einer kurzen, strukturierten Begründung (Reasoning).\n- Extrahiere die Namen aller erkannten Tools auf der Seite und – falls verfügbar – deren zugehörige URL(s). Wird kein Tool genannt, kategorisiere es als \"Irrelevant\" - Reasoning (Analyse) und Tool-Extraktion IMMER vor der Kategorie!\n\n# Schritte\n\n1. Analysiere Inhalt auf: Zielgruppe (Kinder/Jugendliche), Thema (DigiStars-relevant), Seitentyp.\n2. Kläre, ob die Seite die OFFIZIELLE Tool-Seite ist (Produkt-/Download-/Anbieter-Seite, nicht nur Bericht/Beschreibung/Link).\n3. Wenn die Seite Tools nur beschreibt, empfiehlt, verlinkt oder kuratiert (auch nur ein einzelnes Tool!), dann \"Liste\". \"Tool\" nur, wenn offizielles, direktes Angebot.\n4. \"Irrelevant\" nur, wenn es weder Tools noch Empfehlungen für relevante Zielgruppe umfasst.\n5. Reasoning (Analyse, 1–3 Sätze) IMMER vor Kategorie und Extraktion!\n6. Extrahiere alle Tools: Füge für jedes gefundene Tool-Name mit zugehöriger URL in das \"tools\"-Array des Output-Objekts ein. Wenn keine URL genannt wird, setze das Feld auf null. Gibt es keine Tools auf der Seite, ist das Feld ein leeres Array ([]).\n7. Gib am Ende NUR die Kategorie als einzelnes Wort (\"Tool\", \"Liste\", \"Irrelevant\") im entsprechenden Output-Feld aus – nie als Satz oder mit weiterem Text.\n\n# Output Format\n\nDie Antwort muss stets im Format eines JSON-Objekts erfolgen, ohne jegliche Einrahmung durch Codeblöcke.  \n- Das Feld \"reasoning\" enthält eine 1–3 Sätze lange, analytische Begründung (ohne abschließendes Urteil oder kategorienspezifische Begriffe).\n- Das Feld \"tools\" ist ein Array von Objekten der Form {\"name\":\"[Tool-Name]\", \"url\":\"[URL oder null]\"}; ohne Tools ein leeres Array ([]).\n- Das Feld \"category\" enthält exakt das korrekte Wort (\"Tool\", \"Liste\" oder \"Irrelevant\"), nach dem Reasoning.\n\n**Beispiel:**\n{\n  \"reasoning\": \"[Analytische, kategorieschlüsselwortfreie Begründung in 1-3 Sätzen.]\",\n  \"tools\": [\n    {\"name\": \"[Tool-Name1]\", \"url\": \"[URL1 oder null]\"},\n    {\"name\": \"[Tool-Name2]\", \"url\": \"[URL2 oder null]\"}\n  ],\n  \"category\": \"[Kategorie]\"\n}\n\n# Beispiele\n\n**Beispiel 1:**  \nInput:  \nEine Webseite präsentiert eine App, die Jugendlichen in Deutschland bei Angststörungen hilft. Es werden Features, Vorteile und Nutzerfeedback beschrieben. Die Seite ist die offizielle App-Seite mit Download-Link zu www.angstfrei-app.de.\n\nOutput:  \n{\n  \"reasoning\": \"Die Seite stellt ein individuelles digitales Tool vor, das speziell auf Jugendliche in Deutschland ausgerichtet ist und ein relevantes Thema behandelt. Es handelt sich um die offizielle Produktseite mit direktem Zugang.\",\n  \"tools\": [\n    {\"name\": \"Angstfrei-App\", \"url\": \"www.angstfrei-app.de\"}\n  ],\n  \"category\": \"Tool\"\n}\n\n**Beispiel 2:**  \nInput:  \nEine Webseite beschreibt ausführlich eine App zur Suchtprävention für Jugendliche und verlinkt auf die offizielle App-Homepage www.suchtstopp.de, ist aber selbst ein redaktioneller Blogbeitrag.\n\nOutput:  \n{\n  \"reasoning\": \"Die Seite bietet eine redaktionelle Beschreibung und Empfehlung eines einzelnen digitalen Tools für Jugendliche und enthält einen Link zur offiziellen Produktseite, ist jedoch nicht selbst das operative Angebot.\",\n  \"tools\": [\n    {\"name\": \"Suchtstopp\", \"url\": \"www.suchtstopp.de\"}\n  ],\n  \"category\": \"Liste\"\n}\n\n**Beispiel 3:**  \nInput:  \nDie Seite listet 15 verschiedene Apps zu schulischen Themen und Suchtprävention auf, jeweils mit kurzer Beschreibung und Empfehlungscharakter. Nicht alle Tools sind verlinkt.\n\nOutput:  \n{\n  \"reasoning\": \"Die Seite enthält eine redaktionelle Übersicht mehrerer digitaler Tools, die für Schule und Suchtprävention für Jugendliche relevant sind.\",\n  \"tools\": [\n    {\"name\": \"Lernstar\", \"url\": \"www.lernstar.de\"},\n    {\"name\": \"PausePlus\", \"url\": null},\n    {\"name\": \"Suchtstopp\", \"url\": \"www.suchtstopp.de\"}\n  ],\n  \"category\": \"Liste\"\n}\n\n**Beispiel 4:**  \nInput:  \nEine Infoseite über eine gemeinnützige Organisation, die zwar Kinderschutz thematisiert, aber keine digitalen Tools vorstellt oder empfiehlt.\n\nOutput:  \n{\n  \"reasoning\": \"Die Seite informiert über eine Organisation mit Fokus auf Kinderschutz, jedoch ohne Bezug zu digitalen Tools oder relevanten Innovationen.\",\n  \"tools\": [],\n  \"category\": \"Irrelevant\"\n}\n\n# Hinweise\n\n- \"Tool\" NUR, wenn es sich eindeutig um die offizielle Anbieter- oder Produktseite eines einzelnen digitalen Tools handelt.\n- Wenn ein Tool nur beschrieben, empfohlen oder verlinkt wird, immer \"Liste\" – auch wenn es nur um ein einziges Tool geht!\n- Reasoning und Tool-Extraktion IMMER vor Kategorie, niemals umgekehrt.\n- Die Kategorie ist stets ein einzelnes Wort (\"Tool\", \"Liste\" oder \"Irrelevant\") und NICHT Satzbeginn.\n- Prüfe die Inhalte streng nach diesen Definitionen.\n- Die Antwort muss dem angegebenen JSON-Format entsprechen.\n- Das Toolverzeichnis (\"tools\"-Feld) ist immer vollständig zu befüllen (leeres Array, falls keine Tools genannt/erkennbar).\n\n(Reminder: Immer erst Reasoning und Tool-Extraktion, dann Kategorie. Tools-Array stets hinzufügen, auch leer. \"Tool\" nur für offizielle Produkt-/Downloadseiten, die auch auf deutsch verfügbar sind. Bei nur Beschreibungen/Verlinkungen immer \"Liste\".)",
+          "batching": {
+            "batchSize": 50
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2528,
+        -2720
+      ],
+      "id": "863245af-cadb-4d9a-8dd2-a147d11831d1",
+      "name": "Kategorisierung"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Hole das Base64 aus dem Feld pdf\nconst pdfBase64 = $json.pdf;\n\n// Wahrung der Dateiinformationen\nconst fileName = 'document.pdf';\nconst mimeType = 'application/pdf';\n\n// PDF-Buffer als Binärdaten für n8n-Weiterverarbeitung ausgeben\nreturn [\n  {\n    json: {\n      ...$json\n    },\n    binary: {\n      data: {\n        data: Buffer.from(pdfBase64, \"base64\"),\n        mimeType,\n        fileName\n      }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        -2352
+      ],
+      "id": "15e91134-d940-44a8-b554-79e43b6f3887",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        -2352
+      ],
+      "id": "abb23e04-32ad-428e-9d7e-a10eec11d1eb",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11235/pdf",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "https://arxiv.org/pdf/2310.06825.pdf"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        -2352
+      ],
+      "id": "eb9a7c59-fa86-4a68-b095-65552eab581e",
+      "name": "PDF lesen"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1745465371,
+          "mode": "list",
+          "cachedResultName": "Google-Suche",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ez4whq3iLbfXG-e2mUa38q8_5SVDqmvijXe5ZxrrxTg/edit#gid=1745465371"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "=Fehler",
+            "Letztes Update": "={{ $now.setZone(\"Europe/Berlin\").format('yyyy-MM-dd t') }}",
+            "row_number": "={{ $('Neu erfasste abrufen').item.json.row_number }}",
+            "Kommentar": "PDFs können nicht gelesen werden.",
+            "Crawl-Datum": "={{ $('SetInput').item.json.Input && $now.setZone(\"Europe/Berlin\").format('yyyy-MM-dd tt') }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Duplikats-Check",
+              "displayName": "Duplikats-Check",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fachteam-\nBewertung",
+              "displayName": "Fachteam-\nBewertung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Kommentar",
+              "displayName": "Kommentar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Art der Webseite",
+              "displayName": "Art der Webseite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kurzbeschreibung",
+              "displayName": "Kurzbeschreibung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Zielgruppe",
+              "displayName": "Zielgruppe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Plattform",
+              "displayName": "Plattform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Altersgruppe",
+              "displayName": "Altersgruppe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Verfügbare Sprachen",
+              "displayName": "Verfügbare Sprachen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kosten",
+              "displayName": "Kosten",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kategorie",
+              "displayName": "Kategorie",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Organisation",
+              "displayName": "Organisation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Snippet",
+              "displayName": "Snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Ersteller",
+              "displayName": "Ersteller",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Crawl-Datum",
+              "displayName": "Crawl-Datum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Letztes Update",
+              "displayName": "Letztes Update",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1424,
+        -2352
+      ],
+      "id": "6edde7cf-500f-4c0e-b3c3-f4e9a82aad50",
+      "name": "Fehler Sheets PDF",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Your Google Sheets Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1745465371,
+          "mode": "list",
+          "cachedResultName": "Google-Suche",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ez4whq3iLbfXG-e2mUa38q8_5SVDqmvijXe5ZxrrxTg/edit#gid=1745465371"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "URL",
+              "lookupValue": "={{ $json.URL }}"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1808,
+        -1136
+      ],
+      "id": "1ea7fe9e-7d75-41e6-b17f-50f6747cf8e2",
+      "name": "Exakte Matches",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Your Google Sheets Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1745465371,
+          "mode": "list",
+          "cachedResultName": "Google-Suche",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ez4whq3iLbfXG-e2mUa38q8_5SVDqmvijXe5ZxrrxTg/edit#gid=1745465371"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "URL",
+              "lookupValue": "={{ $json.URL.split('/').slice(0,3).join('/') + '/' }}"
+            },
+            {
+              "lookupColumn": "Score",
+              "lookupValue": "=Tool"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2224,
+        -1152
+      ],
+      "id": "55c794cd-34a0-4497-9f88-40df0508ba9d",
+      "name": "Tools Base-URL Matches",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Your Google Sheets Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0bae3951-39aa-42da-b2cf-ccdf30e44280",
+              "name": "URL",
+              "value": "={{ $('Exakte Matches entfernen').first().json.URL }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2432,
+        -1152
+      ],
+      "id": "cc6a2a01-9a75-4425-bcb0-38188c979344",
+      "name": "Original-URL wiederherstellen"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "URL",
+        "joinMode": "keepNonMatches",
+        "options": {
+          "fuzzyCompare": false
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2000,
+        -1024
+      ],
+      "id": "a3bcea1d-1606-4e01-a83b-0932698100f5",
+      "name": "Exakte Matches entfernen",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "URL",
+        "joinMode": "keepNonMatches",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2656,
+        -1040
+      ],
+      "id": "69375f45-4388-48b3-8b04-67d66606e386",
+      "name": "Tools entfernen",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "79585d49-df19-438a-ab38-11eb9e1713ae",
+              "leftValue": "={{ $json.URL }}",
+              "rightValue": "=.pdf",
+              "operator": {
+                "type": "string",
+                "operation": "notEndsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        -2592
+      ],
+      "id": "72cad48e-7979-47a9-a34a-7b0d2947d7fb",
+      "name": "If | kein PDF"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        848,
+        -2608
+      ],
+      "id": "3ed221a3-1cfd-4d25-8957-731e960b6ffc",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        3120,
+        -1696
+      ],
+      "id": "c8c45d17-c793-4812-a3ea-bfd2874a9c72"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "latest AI developments 2024"
+            },
+            {
+              "name": "max_results",
+              "value": "5"
+            },
+            {
+              "name": "max_tokens_per_page",
+              "value": "1024"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -112,
+        -2784
+      ],
+      "id": "00b547d0-951d-4846-8c45-f8a580bdd80e",
+      "name": "Perplexity",
+      "notes": "https://docs.perplexity.ai/guides/search-quickstart#response"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Suche": {
+      "main": [
+        [
+          {
+            "node": "Split Out - Google",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FireCrawl Scraper": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        []
+      ]
+    },
+    "Links": {
+      "main": [
+        [
+          {
+            "node": "URLs normalisieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URLs normalisieren": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Neu erfasste abrufen": {
+      "main": [
+        [
+          {
+            "node": "Sheets-Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sammeln": {
+      "main": [
+        [
+          {
+            "node": "Tool/Liste/Irrelevant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool/Liste/Irrelevant": {
+      "main": [
+        [
+          {
+            "node": "Tool | Details",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Irrelevant Details",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Liste Details",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Neu erfasste abrufen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gpt-4.1-nano": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Irrelevant Details",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Liste Details",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "o4-mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Tool | Details",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Irrelevant Details": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Liste Details": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Tool | Details": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Digistars - deduplication": {
+      "main": [
+        [
+          {
+            "node": "Google-Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Neu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Exakte Matches",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Exakte Matches entfernen",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Neu": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets-Input": {
+      "main": [
+        [
+          {
+            "node": "SetInput",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetInput": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google-Input": {
+      "main": [
+        [
+          {
+            "node": "SetInput",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Fehler Google",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fehler Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL Variable": {
+      "main": [
+        [
+          {
+            "node": "Call Digistars - deduplication",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anfügen aus Liste": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Firecrawl Fehlerbehandlung": {
+      "main": [
+        [
+          {
+            "node": "Auf 20k Tokens begrenzen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Suchanfrage": {
+      "main": [
+        []
+      ]
+    },
+    "Existierende URLs": {
+      "main": [
+        [
+          {
+            "node": "zu Base-URLs für EXA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "EXA Suche",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "zu Base-URLs für EXA": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EXA Suche": {
+      "main": [
+        [
+          {
+            "node": "Split Out - EXA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out - Google": {
+      "main": [
+        []
+      ]
+    },
+    "Split Out - EXA": {
+      "main": [
+        [
+          {
+            "node": "URL Variable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EXA Suchanfrage": {
+      "main": [
+        [
+          {
+            "node": "Existierende URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auf 20k Tokens begrenzen": {
+      "main": [
+        [
+          {
+            "node": "Kategorisierung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "crawl4ai": {
+      "main": [
+        [
+          {
+            "node": "output einsortieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "output einsortieren": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "Firecrawl Fehlerbehandlung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Kategorisierung",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Kategorisierung",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kategorisierung": {
+      "main": [
+        [
+          {
+            "node": "Sammeln",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF lesen": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Fehler Sheets PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exakte Matches": {
+      "main": [
+        [
+          {
+            "node": "Exakte Matches entfernen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tools Base-URL Matches": {
+      "main": [
+        [
+          {
+            "node": "Original-URL wiederherstellen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Original-URL wiederherstellen": {
+      "main": [
+        [
+          {
+            "node": "Tools entfernen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exakte Matches entfernen": {
+      "main": [
+        [
+          {
+            "node": "Tools entfernen",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Tools Base-URL Matches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tools entfernen": {
+      "main": [
+        [
+          {
+            "node": "Anfügen aus Liste",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If | kein PDF": {
+      "main": [
+        [
+          {
+            "node": "crawl4ai",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PDF lesen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If | kein PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Berlin",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "versionId": "211d2da0-dc4a-4775-a0a2-15771e9e53b1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_N8N_INSTANCE_ID"
+  },
+  "id": "YOUR_WORKFLOW_ID",
+  "tags": []
+}
